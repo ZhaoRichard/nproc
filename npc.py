@@ -4,6 +4,7 @@ __author__ = "Richard Zhao, Yang Feng, Jingyi Jessica Li and Xin Tong"
 
 import scipy.stats as ss
 from scipy.stats import binom
+from sklearn import svm
 from numpy import *
 
 class npc:
@@ -65,12 +66,13 @@ class npc:
             
             for i in range(split):
     
-                indices0train = random.choice(indices0, num0, replace = False)
-                indices1train = random.choice(indices1, num1, replace = False)
+                indices0train = random.choice(indices0, num0, replace = False).tolist()
+                indices1train = random.choice(indices1, num1, replace = False).tolist()
     
                 indices0test = [item for item in indices0 if item not in indices0train]
                 indices1test = [item for item in indices1 if item not in indices1train]
                 
+        
                 if rand_seed is not None:
                     random.seed(rand_seed+i)
                 
@@ -95,9 +97,105 @@ class npc:
         return [split_ratio_min, split_ratio_1se, error_m, error_se]
     
     
+
+    
+    
     # NPC split
     def npc_split(self, x, y, p, alpha, delta, indices0train, indices0test, indices1train, indices1test, method, n_cores):
-        return []
+        
+        
+        indices_train = indices0train + indices1train
+        indices_test = indices0test + indices1test
+                
+        x_train = [x[index] for index in indices_train]
+        y_train = [y[index] for index in indices_train]
+        
+        x_test = [x[index] for index in indices_test]
+        y_test = [y[index] for index in indices_test]
+        
+        class_data = self.classification(method, x_train, y_train, x_test)           
+        
+        fit=class_data[0]
+        y_decision_values= class_data[1]
+        
+        obj = self.npc_core(y_test, y_decision_values, alpha, delta, n_cores)
+        
+        cutoff = obj[0]
+        sign = obj[1]
+        beta_l_list = obj[2]
+        beta_u_list = obj[3]
+        alpha_l_list = obj[4]
+        alpha_u_list = obj[5]
+        n_small = obj[6]
+        
+        return [fit, y_test, y_decision_values, cutoff, sign, method, beta_l_list, beta_u_list, alpha_l_list, alpha_u_list, n_small]
+ 
+    
+    def classification(self, method, x_train, y_train, x_test):
+        
+        #print (x_train)
+        #print (y_train)
+        #print (x_test)
+        if method == 'svm':
+            clf_SVM = svm.SVC()
+            clf_SVM.fit(x_train, y_train)
+            fit = clf_SVM
+            decision_values=clf_SVM.predict(x_test)
+        
+        #print(decision_values)
+        return [fit, decision_values]
+
+        
+    def npc_core(self, y_test, y_decision_values, alpha, delta, n_cores):
+        
+        #ind0 = which(y == 0)  ##indices for class 0
+        indices0 =  [index for index, item in enumerate(y_test) if item == 0]
+        #ind1 = which(y == 1)  ##indices for class 1
+        indices1 =  [index for index, item in enumerate(y_test) if item == 1]
+        
+        if len(indices0) == 0 or len(indices1) == 0:
+            print("Both class 0 and class 1 responses are needed to decide the cutoff.")
+            return []
+        
+        #whether the class 0 has a larger average score than class 1
+        test_list0 = [y_decision_values[index] for index in indices0]
+        test_list1 = [y_decision_values[index] for index in indices1]
+        
+        sign = mean(test_list0) > mean(test_list1) 
+    
+        if sign == False:
+            y_decision_values = [ -y for y in y_decision_values]
+            
+
+        obj = self.find_order(test_list0, test_list1, delta, n_cores)
+        
+        cutoff_list = obj[0]
+
+        beta_l_list = obj[1]
+        beta_u_list = obj[2]
+        alpha_l_list = obj[3]
+        alpha_u_list = obj[4]
+        alpha_u_len = len(alpha_u_list)
+        alpha_u_min = min(alpha_u_list)
+        
+        n_small = False;
+        
+        if alpha != None:
+            if alpha_u_min > alpha + 1e-10:
+                cutoff = inf
+                loc = len(indices0)
+                n_small = True
+                print ('Sample size is too small for the given alpha. Try a larger alpha.')
+                
+            else:
+                #loc = min(which(obj$alpha.u <= alpha + 1e-10))
+                temp_list = [index for index, item in enumerate(alpha_u_list) if item <= alpha + 1e-10]
+                loc = min(temp_list)
+                cutoff = cutoff_list[loc]
+  
+        
+        return [cutoff, sign, beta_l_list, beta_u_list, alpha_l_list, alpha_u_list, n_small]
+    
     
     # find the order such that the type-I error bound is satisfied with probability 
     # at least 1-delta
@@ -215,4 +313,4 @@ class npc:
 
 test = npc()
 #result = test.find_order(list(range(1, 101)), list(range(200, 301)))
-result = test.npc([[1,2,3,4,5],[2,3,4,5,6]], [0,0,0,1,1], 'np')
+result = test.npc([[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]], [0,0,0,1,1,1], 'svm')
