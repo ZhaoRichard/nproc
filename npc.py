@@ -140,7 +140,8 @@ class npc:
             clf_SVM = svm.SVC()
             clf_SVM.fit(x_train, y_train)
             fit = clf_SVM
-            decision_values=clf_SVM.predict(x_test)
+            decision_values = clf_SVM.decision_function(x_test)
+            #decision_values=clf_SVM.predict(x_test)
         
         #print(decision_values)
         return [fit, decision_values]
@@ -313,4 +314,11 @@ class npc:
 
 test = npc()
 #result = test.find_order(list(range(1, 101)), list(range(200, 301)))
-result = test.npc([[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]], [0,0,0,1,1,1], 'svm')
+#result = test.npc([[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]], [0,0,0,1,1,1], 'svm')
+n = 1000
+x = random.normal(0, 1, (n,2))
+c = 1+3*x[:,0]
+y = random.binomial(1, 1/(1+exp(-c)), n)
+#binomial(number of trials, probability of success, num of observations)
+
+result = test.npc(x, y, 'svm')
