@@ -5,13 +5,12 @@ __author__ = "Richard Zhao, Yang Feng, Jingyi Jessica Li and Xin Tong"
 import scipy.stats as ss
 from scipy.stats import binom
 from sklearn import svm
+from sklearn.linear_model import LogisticRegression
 from numpy import *
 
 class npc:
     
-    
 
-    
     # Given a type I error upper bound alpha and a violation upper bound delta, 
     # npc calculates the Neyman-Pearson Classifier which controls the type I error 
     # under alpha with probability at least 1-delta.
@@ -94,11 +93,11 @@ class npc:
     
     # Find the optimal split
     def find_optim_split(self, x, y, method, alpha, delta, split, n_folds, band, rand_seed):
+	    # TODO
         return [split_ratio_min, split_ratio_1se, error_m, error_se]
     
     
 
-    
     
     # NPC split
     def npc_split(self, x, y, p, alpha, delta, indices0train, indices0test, indices1train, indices1test, method, n_cores):
@@ -141,10 +140,18 @@ class npc:
             clf_SVM.fit(x_train, y_train)
             fit = clf_SVM
             decision_values = clf_SVM.decision_function(x_test)
-            #decision_values=clf_SVM.predict(x_test)
+            test_score = decision_values
+            #test_score=clf_SVM.predict(x_test)
+        elif method == 'logistic':
+            clf_logistic = LogisticRegression()
+            clf_logistic.fit(x_train, y_train)
+            fit = clf_logistic
+            test_score = clf_logistic.predict(x_test)
         
-        #print(decision_values)
-        return [fit, decision_values]
+        #TODO: more methods
+        
+        #print(test_score)
+        return [fit, test_score]
 
         
     def npc_core(self, y_test, y_decision_values, alpha, delta, n_cores):
@@ -310,15 +317,16 @@ class npc:
         return [scores, beta_l_list, beta_u_list, alpha_l_list, alpha_u_list, r_upper1, r_lower1, r_upper0, r_lower0]
 
 
+    # Predicting the outcome of a set of new observations using the fitted npc object.
+    def predict(self, fit, newx):
+        # TODO
+        label = 0
+        score = 0
+        return [label, score]
+        
+    # pred.npc.core    
+    def pred_npc_core(self, fit, newx):
+        # TODO
+        return [label, score]
 
 
-test = npc()
-#result = test.find_order(list(range(1, 101)), list(range(200, 301)))
-#result = test.npc([[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]], [0,0,0,1,1,1], 'svm')
-n = 1000
-x = random.normal(0, 1, (n,2))
-c = 1+3*x[:,0]
-y = random.binomial(1, 1/(1+exp(-c)), n)
-#binomial(number of trials, probability of success, num of observations)
-
-result = test.npc(x, y, 'svm')
