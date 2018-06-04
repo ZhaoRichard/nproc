@@ -17,11 +17,9 @@ y = random.binomial(1, 1/(1+exp(-c)), n)  #binomial(number of trials, probabilit
 fit = test.npc(x, y, 'svm')
 
 
-# =============================================================================
-# x_test = random.normal(0, 1, (n,2))
-# c_test = 1+3*x_test[:,0]
-# y_test = random.binomial(1, 1/(1+exp(-c_test)), n)
-# 
-# pred = test.predict(fit,x_test)
-# score = test.predict(fit,x)
-# =============================================================================
+x_test = random.normal(0, 1, (n,2))
+c_test = 1+3*x_test[:,0]
+y_test = random.binomial(1, 1/(1+exp(-c_test)), n)
+
+pred = test.predict(fit,x_test)
+score = test.predict(fit,x)

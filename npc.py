@@ -14,6 +14,7 @@ class npc:
     # Given a type I error upper bound alpha and a violation upper bound delta, 
     # npc calculates the Neyman-Pearson Classifier which controls the type I error 
     # under alpha with probability at least 1-delta.
+    # returns a result containing the fits with extra information
     def npc(self, x, y, method, alpha = None, delta = None, split = None, split_ratio = None, n_cores = None, band = None, rand_seed = None):
         
         if alpha is None:
@@ -86,20 +87,21 @@ class npc:
                               indices1, indices1, method, n_cores))
 
     
-        ret = [fits, method, split, split_ratio, errors]
-        return ret
+        res = [fits, method, split, split_ratio, errors]
+        return res
         
     
     
     # Find the optimal split
     def find_optim_split(self, x, y, method, alpha, delta, split, n_folds, band, rand_seed):
-	    # TODO
+        # TODO
         return [split_ratio_min, split_ratio_1se, error_m, error_se]
     
     
 
     
     # NPC split
+    # returns a fit
     def npc_split(self, x, y, p, alpha, delta, indices0train, indices0test, indices1train, indices1test, method, n_cores):
         
         
@@ -114,7 +116,7 @@ class npc:
         
         class_data = self.classification(method, x_train, y_train, x_test)           
         
-        fit=class_data[0]
+        fit_model=class_data[0]
         y_decision_values= class_data[1]
         
         obj = self.npc_core(y_test, y_decision_values, alpha, delta, n_cores)
@@ -127,7 +129,7 @@ class npc:
         alpha_u_list = obj[5]
         n_small = obj[6]
         
-        return [fit, y_test, y_decision_values, cutoff, sign, method, beta_l_list, beta_u_list, alpha_l_list, alpha_u_list, n_small]
+        return [fit_model, y_test, y_decision_values, cutoff, sign, method, beta_l_list, beta_u_list, alpha_l_list, alpha_u_list, n_small]
  
     
     def classification(self, method, x_train, y_train, x_test):
@@ -138,20 +140,20 @@ class npc:
         if method == 'svm':
             clf_SVM = svm.SVC()
             clf_SVM.fit(x_train, y_train)
-            fit = clf_SVM
+            fit_model = clf_SVM
             decision_values = clf_SVM.decision_function(x_test)
             test_score = decision_values
             #test_score=clf_SVM.predict(x_test)
         elif method == 'logistic':
             clf_logistic = LogisticRegression()
             clf_logistic.fit(x_train, y_train)
-            fit = clf_logistic
+            fit_model = clf_logistic
             test_score = clf_logistic.predict(x_test)
         
         #TODO: more methods
         
         #print(test_score)
-        return [fit, test_score]
+        return [fit_model, test_score]
 
         
     def npc_core(self, y_test, y_decision_values, alpha, delta, n_cores):
@@ -318,15 +320,59 @@ class npc:
 
 
     # Predicting the outcome of a set of new observations using the fitted npc object.
-    def predict(self, fit, newx):
-        # TODO
-        label = 0
-        score = 0
+    def predict(self, result, newx):
+        
+        label = []
+        score = []
+        split = result[2]
+        
+        if split < 1:
+            pred = self.pred_npc_core(result, newx)
+            label = pred[0]
+            score = pred[1]
+        else:
+            pred = self.pred_npc_core(result[0][0], newx)
+            label = pred[0]
+            score = pred[1]
+            
+            if split > 1:
+                for i in range(2, split):
+                    pred = self.pred_npc_core(result[0][i], newx)
+                    label += pred[0]
+                    score += pred[1]
+                    
+            for i in range(len(label)):
+                if label[i]/split > 0.5:
+                    label[i] = 1
+                else:
+                    label[1] = 0
+
+            for i in range(len(score)):
+                score[i] = score[i] / split
+            
         return [label, score]
         
     # pred.npc.core    
     def pred_npc_core(self, fit, newx):
-        # TODO
+        
+        method = fit[5]
+        fit_model = fit[0]
+        cutoff = fit[3]
+        label = []
+        score = []
+
+        if method == 'svm':
+            decision_values = fit_model.decision_function(newx)
+            score = decision_values
+        elif method == 'logistic':
+            score = fit_model.predict(newx)
+        
+        for i in range(len(score)):
+            if score[i] > cutoff:
+                label.append(1)
+            else:
+                label.append(0)
+                
         return [label, score]
 
 
