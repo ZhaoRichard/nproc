@@ -4,8 +4,9 @@ __author__ = "Richard Zhao, Yang Feng, Jingyi Jessica Li and Xin Tong"
 
 import scipy.stats as ss
 from scipy.stats import binom
-from sklearn import svm
+from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
 from numpy import *
 
 class npc:
@@ -137,7 +138,7 @@ class npc:
         #print (y_train)
         #print (x_test)
         if method == 'svm':
-            clf_SVM = svm.SVC()
+            clf_SVM = SVC()
             clf_SVM.fit(x_train, y_train)
             fit_model = clf_SVM
             test_score = clf_SVM.decision_function(x_test)
@@ -147,7 +148,11 @@ class npc:
             clf_logistic.fit(x_train, y_train)
             fit_model = clf_logistic
             test_score = clf_logistic.predict_proba(x_test)[:,1]
-        
+        elif method == 'nb':
+            clf_nb = GaussianNB()
+            clf_nb.fit(x_train, y_train)
+            fit_model = clf_nb
+            test_score = clf_nb.predict_proba(x_test)[:,1]
         
         #TODO: more methods
         
@@ -367,6 +372,8 @@ class npc:
             decision_values = fit_model.decision_function(newx)
             score = decision_values
         elif method == 'logistic':
+            score = fit_model.predict_proba(newx)[:,1]
+        elif method == 'nb':
             score = fit_model.predict_proba(newx)[:,1]
         
         for i in range(len(score)):
