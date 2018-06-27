@@ -29,15 +29,16 @@ class npc:
             n_cores = 1
         if band is None:
             band = False
+        if rand_seed is None:
+            rand_seed = 0
 
-            
         if split_ratio == 'adaptive':
             ret = self.find_optim_split(x, y, method, alpha, delta, split, 10, band, rand_seed)
             split_ratio = ret[0]
             errors = ret[2]
         else:
             errors = 0
-            
+        
         random.seed(rand_seed)
         
         p = len(x[0])
@@ -104,7 +105,6 @@ class npc:
     # returns a fit
     def npc_split(self, x, y, p, alpha, delta, indices0train, indices0test, indices1train, indices1test, method, n_cores):
         
-        
         indices_train = indices0train + indices1train
         indices_test = indices0test + indices1test
                 
@@ -128,7 +128,6 @@ class npc:
         alpha_l_list = obj[4]
         alpha_u_list = obj[5]
         n_small = obj[6]
-        
         return [fit_model, y_test, y_decision_values, cutoff, sign, method, beta_l_list, beta_u_list, alpha_l_list, alpha_u_list, n_small]
  
     
@@ -141,17 +140,18 @@ class npc:
             clf_SVM = svm.SVC()
             clf_SVM.fit(x_train, y_train)
             fit_model = clf_SVM
-            decision_values = clf_SVM.decision_function(x_test)
-            test_score = decision_values
+            test_score = clf_SVM.decision_function(x_test)
             #test_score=clf_SVM.predict(x_test)
         elif method == 'logistic':
             clf_logistic = LogisticRegression()
             clf_logistic.fit(x_train, y_train)
             fit_model = clf_logistic
-            test_score = clf_logistic.predict(x_test)
+            test_score = clf_logistic.predict_proba(x_test)[:,1]
+        
         
         #TODO: more methods
         
+        #print(test_score)
         #print(test_score)
         return [fit_model, test_score]
 
@@ -171,12 +171,14 @@ class npc:
         test_list0 = [y_decision_values[index] for index in indices0]
         test_list1 = [y_decision_values[index] for index in indices1]
         
+        
         sign = mean(test_list0) > mean(test_list1) 
     
         if sign == False:
             y_decision_values = [ -y for y in y_decision_values]
             
 
+        
         obj = self.find_order(test_list0, test_list1, delta, n_cores)
         
         cutoff_list = obj[0]
@@ -365,7 +367,7 @@ class npc:
             decision_values = fit_model.decision_function(newx)
             score = decision_values
         elif method == 'logistic':
-            score = fit_model.predict(newx)
+            score = fit_model.predict_proba(newx)[:,1]
         
         for i in range(len(score)):
             if score[i] > cutoff:
@@ -374,5 +376,4 @@ class npc:
                 label.append(0)
                 
         return [label, score]
-
 
