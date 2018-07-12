@@ -8,6 +8,10 @@ from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from numpy import *
+#import numpy as np
+#from joblib import Parallel, delayed
+#import multiprocessing
+
 
 class npc:
     
@@ -225,6 +229,8 @@ class npc:
         
         score0 = sorted(score0)
         score1 = sorted(score1)
+        
+        
         len0 = len(score0)
         len1 = len(score1)
       
@@ -243,18 +249,59 @@ class npc:
         r_lower0 = ss.rankdata(score0, method='min')
         r_upper0 = ss.rankdata(score0, method='max')
 
-        def r_lower_helper(s):
-            return sum(i <= s for i in score1)
-
-        def r_upper_helper(s):
-            return sum(i < s for i in score1) + max(1,sum(i == s for i in score1))
+        # Count the number of items in score1 that are less than each item in scores
         
+        # original approach
+        #def r_lower_helper(s):
+        #    return sum(i <= s for i in score1)
+        #def r_upper_helper(s):
+        #    return sum(i < s for i in score1) + max(1,sum(i == s for i in score1))
+        #r_lower1 = [r_lower_helper(s) for s in scores]        
+        #r_upper1 = [r_upper_helper(s) for s in scores]
+        
+        # parallel approach
+        #n_cores = multiprocessing.cpu_count()
+        #r_lower1 = Parallel(n_jobs=n_cores)(delayed(r_lower_helper)(s) for s in scores)
+        #r_upper1 = Parallel(n_jobs=n_cores)(delayed(r_upper_helper)(s) for s in scores)
 
-        r_lower1 = [r_lower_helper(s) for s in scores]
-        r_upper1 = [r_upper_helper(s) for s in scores]
+        r_lower1 =[0] * len(scores)
+        r_upper1 =[0] * len(scores)
+        
+        r_lower_index = 0
+        r_upper_index = 0
 
+        score1_index_l = 0
+        score1_index_u = 0
+        
+        for s in scores:
+            while score1[score1_index_l] <= s:
+                score1_index_l+=1
+            
+            r_lower1[r_lower_index] = score1_index_l
+            r_lower_index+=1
+        
+            while score1[score1_index_u] <= s:
+                score1_index_u+=1
+            
+            equal = False
+            if score1_index_u > 0 and score1[score1_index_u-1] == s:
+                equal = True
+                
+            r_upper1[r_upper_index] = score1_index_u
+            if equal == False:
+                r_upper1[r_upper_index]+=1
+                
+            r_upper_index+=1
+        
         #print(r_lower1)
+        #print(r_lower1a)
+        #print(r_lower1 == r_lower1a)
         #print(r_upper1)
+        #print(r_upper1a)
+        #print(r_upper1 == r_upper1a)
+        #print(len(r_lower1))
+        #print(len(r_upper1))
+        
         
         def alpha_helper(s):
             #alpha_u = v_list[min(which(pbinom(n0 - ru0[s], len0, v_list) <= delta))]
