@@ -3,6 +3,8 @@
 
 from numpy import *
 from npc import npc
+import multiprocessing
+
 
 test = npc()
 #result = test.find_order(list(range(1, 101)), list(range(200, 301)))
@@ -11,13 +13,12 @@ test = npc()
 
 random.seed(1)
 
-n = 1000
+n = 100000
 x = random.normal(0, 1, (n,2))
 c = 1+3*x[:,0]
 y = random.binomial(1, 1/(1+exp(-c)), n)  #binomial(number of trials, probability of success, num of observations)
 
-
-fit = test.npc(x, y, 'svm')
+fit = test.npc(x, y, 'logistic', n_cores=multiprocessing.cpu_count())
 
 
 x_test = random.normal(0, 1, (n,2))

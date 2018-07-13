@@ -9,8 +9,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from numpy import *
 #import numpy as np
-#from joblib import Parallel, delayed
-#import multiprocessing
+from joblib import Parallel, delayed
+import multiprocessing
 
 
 class npc:
@@ -75,9 +75,11 @@ class npc:
                 indices0train = random.choice(indices0, num0, replace = False).tolist()
                 indices1train = random.choice(indices1, num1, replace = False).tolist()
     
-                indices0test = [item for item in indices0 if item not in indices0train]
-                indices1test = [item for item in indices1 if item not in indices1train]
-                
+                indices0set = set(indices0train)
+                indices0test = [item for item in indices0 if item not in indices0set]
+                indices1set = set(indices1train)
+                indices1test = [item for item in indices1 if item not in indices1set]
+        
         
                 if rand_seed is not None:
                     random.seed(rand_seed+i)
@@ -321,16 +323,15 @@ class npc:
                     if item >= 1-delta:
                         alpha_l = v_list[index]
                         break
-            if (r_upper1[s] >= len1):
+                    
+            if r_upper1[s] >= len1:
                 #beta_l = v_list[max(which(pbinom(rl1[i]-1, n1, v_list) >= 1 - delta))]    
                 prob = binom.cdf(r_lower1[s]-1, len1, v_list)
                 for index, item in reversed(list(enumerate(prob))):
                     if item >= 1-delta:
                         beta_l = v_list[index]
                         break            
-                
                 beta_u = 1
-                
             elif r_lower1[s] == 0:
                 beta_l = 0
                 
@@ -340,7 +341,6 @@ class npc:
                     if item <= delta:
                         beta_u = v_list[index]
                         break            
-                
             else:
                 #beta_l = v_list[max(which(pbinom(rl1[i]-1, n1, v_list) >= 1 - delta))]
                 prob = binom.cdf(r_lower1[s]-1, len1, v_list)
@@ -360,9 +360,8 @@ class npc:
             return [alpha_l, alpha_u, beta_l, beta_u]
         
         
-        
-        alpha = [alpha_helper(s) for s in list(range(0, len0))]
-        
+        alpha = Parallel(n_jobs=n_cores)(delayed(alpha_helper)(s) for s in list(range(0, len0)))
+
         alpha = array(alpha)
         alpha_l_list = alpha[:,0]
         alpha_u_list = alpha[:,1]
