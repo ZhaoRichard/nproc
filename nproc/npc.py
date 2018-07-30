@@ -3,12 +3,11 @@
 __author__ = "Richard Zhao, Yang Feng, Jingyi Jessica Li and Xin Tong"
 
 import scipy.stats as ss
+import numpy as np
 from scipy.stats import binom
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
-from numpy import *
-#import numpy as np
 from joblib import Parallel, delayed
 import multiprocessing
 
@@ -44,7 +43,7 @@ class npc:
         else:
             errors = 0
         
-        random.seed(rand_seed)
+        np.random.seed(rand_seed)
         
         p = len(x[0])
         if p == 1 and method == 'penlog':
@@ -72,8 +71,8 @@ class npc:
             
             for i in range(split):
     
-                indices0train = random.choice(indices0, num0, replace = False).tolist()
-                indices1train = random.choice(indices1, num1, replace = False).tolist()
+                indices0train = np.random.choice(indices0, num0, replace = False).tolist()
+                indices1train = np.random.choice(indices1, num1, replace = False).tolist()
     
                 indices0set = set(indices0train)
                 indices0test = [item for item in indices0 if item not in indices0set]
@@ -82,7 +81,7 @@ class npc:
         
         
                 if rand_seed is not None:
-                    random.seed(rand_seed+i)
+                    np.random.seed(rand_seed+i)
                 
                 if (band == True):
                     
@@ -183,7 +182,7 @@ class npc:
         test_list1 = [y_decision_values[index] for index in indices1]
         
         
-        sign = mean(test_list0) > mean(test_list1) 
+        sign = np.mean(test_list0) > np.mean(test_list1) 
     
         if sign == False:
             y_decision_values = [ -y for y in y_decision_values]
@@ -246,7 +245,7 @@ class npc:
         beta_l_list = [0] * len0
         beta_u_list = [0] * len0
         
-        v_list = arange(0, 1.001, 0.001)
+        v_list = np.arange(0, 1.001, 0.001)
         
         r_lower0 = ss.rankdata(score0, method='min')
         r_upper0 = ss.rankdata(score0, method='max')
@@ -362,7 +361,7 @@ class npc:
         
         alpha = Parallel(n_jobs=n_cores)(delayed(alpha_helper)(s) for s in list(range(0, len0)))
 
-        alpha = array(alpha)
+        alpha = np.array(alpha)
         alpha_l_list = alpha[:,0]
         alpha_u_list = alpha[:,1]
         beta_l_list = alpha[:,2]
