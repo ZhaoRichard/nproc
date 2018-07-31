@@ -8,4 +8,5 @@ setup(
    author_email='zhao.rich@gmail.com',
    packages=['nproc'],
    install_requires=['scipy', 'sklearn', 'numpy', 'joblib', 'multiprocessing'],
+   long_description=open('README.md').read(),
 )
