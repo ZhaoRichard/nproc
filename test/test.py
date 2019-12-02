@@ -2,7 +2,7 @@
 
 import numpy as np
 import os
-from npc import npc
+from nproc import npc
 
 
 test = npc()
