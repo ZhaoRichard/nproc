@@ -9,7 +9,7 @@ from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from joblib import Parallel, delayed
-import multiprocessing
+#import multiprocessing
 
 
 class npc:
