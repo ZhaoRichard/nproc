@@ -276,12 +276,16 @@ class npc:
         
         for s in scores:
             while score1[score1_index_l] <= s:
+                if score1_index_l == len1-1:
+                    break
                 score1_index_l+=1
             
             r_lower1[r_lower_index] = score1_index_l
             r_lower_index+=1
         
             while score1[score1_index_u] <= s:
+                if score1_index_u == len1-1:
+                    break                
                 score1_index_u+=1
             
             equal = False
@@ -294,14 +298,7 @@ class npc:
                 
             r_upper_index+=1
         
-        #print(r_lower1)
-        #print(r_lower1a)
-        #print(r_lower1 == r_lower1a)
-        #print(r_upper1)
-        #print(r_upper1a)
-        #print(r_upper1 == r_upper1a)
-        #print(len(r_lower1))
-        #print(len(r_upper1))
+
         
         
         def alpha_helper(s):
