@@ -8,7 +8,7 @@ Details
 
 Usage
 
-	npc(x, y, method = ("logistic", "svm", "nb", "rf"), alpha = 0.05, delta = 0.05, split = 1, split_ratio = 0.5, n_cores = 1, band = False, randSeed = 0)
+	npc(x, y, method = ("logistic", "svm", "nb", "rf"...), alpha = 0.05, delta = 0.05, split = 1, split_ratio = 0.5, n_cores = 1, band = False, randSeed = 0)
 
 Arguments
 
@@ -17,7 +17,9 @@ Arguments
 	method  	logistic: Logistic Regression.
 	    		svm: Support Vector Machine.
 	    		nb: Gaussian Naive Bayes.
+	    		nb_m: Multinomial Naive Bayes.
 	    		rf: Random Forest.
+	    		dt: Decision Tree.
 	alpha		the desirable upper bound on type I error rate. Default = 0.05.
 	delta		the violation rate of the type I error rate. Default = 0.05.
 	split		the number of splits for the class 0 sample. Default = 1. For ensemble version, choose split > 1.

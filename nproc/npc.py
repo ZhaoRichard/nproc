@@ -9,7 +9,9 @@ from scipy.stats import binom
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
 from joblib import Parallel, delayed
 #import multiprocessing
 
@@ -166,11 +168,21 @@ class npc:
             clf_nb.fit(x_train, y_train)
             fit_model = clf_nb
             test_score = clf_nb.predict_proba(x_test)[:,1]
+        elif method == 'nb_m':
+            clf_nb = MultinomialNB()
+            clf_nb.fit(x_train, y_train)
+            fit_model = clf_nb
+            test_score = clf_nb.predict_proba(x_test)[:,1]
         elif method == 'rf':
             clf_rf = RandomForestClassifier()
             clf_rf.fit(x_train, y_train)
             fit_model = clf_rf
             test_score = clf_rf.predict_proba(x_test)[:,1]
+        elif method == 'dt':
+            clf_dt = DecisionTreeClassifier()
+            clf_dt.fit(x_train, y_train)
+            fit_model = clf_dt
+            test_score = clf_dt.predict_proba(x_test)[:,1]
         #TODO: more methods
         else:
             print("Method not supported.")
