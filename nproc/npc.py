@@ -4,10 +4,12 @@ __author__ = "Richard Zhao, Yang Feng, Jingyi Jessica Li and Xin Tong"
 
 import scipy.stats as ss
 import numpy as np
+import math
 from scipy.stats import binom
-from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import RandomForestClassifier
 from joblib import Parallel, delayed
 #import multiprocessing
 
@@ -102,6 +104,10 @@ class npc:
     # Find the optimal split
     def find_optim_split(self, x, y, method, alpha, delta, split, n_folds, band, rand_seed):
         # TODO
+        split_ratio_min = 0
+        split_ratio_1se = 0
+        error_m = 0
+        error_se = 0
         return [split_ratio_min, split_ratio_1se, error_m, error_se]
     
     
@@ -121,6 +127,8 @@ class npc:
         y_test = [y[index] for index in indices_test]
         
         class_data = self.classification(method, x_train, y_train, x_test)           
+        if class_data == []:
+            return []
         
         fit_model=class_data[0]
         y_decision_values= class_data[1]
@@ -142,27 +150,33 @@ class npc:
         #print (x_train)
         #print (y_train)
         #print (x_test)
-        if method == 'svm':
-            clf_SVM = SVC()
-            clf_SVM.fit(x_train, y_train)
-            fit_model = clf_SVM
-            test_score = clf_SVM.decision_function(x_test)
-            #test_score=clf_SVM.predict(x_test)
-        elif method == 'logistic':
+
+        if method == 'logistic':
             clf_logistic = LogisticRegression()
             clf_logistic.fit(x_train, y_train)
             fit_model = clf_logistic
             test_score = clf_logistic.predict_proba(x_test)[:,1]
+        elif method == 'svm':
+            clf_SVM = SVC(probability=True)
+            clf_SVM.fit(x_train, y_train)
+            fit_model = clf_SVM
+            test_score = clf_SVM.predict_proba(x_test)[:,1]
         elif method == 'nb':
             clf_nb = GaussianNB()
             clf_nb.fit(x_train, y_train)
             fit_model = clf_nb
             test_score = clf_nb.predict_proba(x_test)[:,1]
-        
+        elif method == 'rf':
+            clf_rf = RandomForestClassifier()
+            clf_rf.fit(x_train, y_train)
+            fit_model = clf_rf
+            test_score = clf_rf.predict_proba(x_test)[:,1]
         #TODO: more methods
+        else:
+            print("Method not supported.")
+            return []
         
-        #print(test_score)
-        #print(test_score)
+        
         return [fit_model, test_score]
 
         
@@ -197,14 +211,14 @@ class npc:
         beta_u_list = obj[2]
         alpha_l_list = obj[3]
         alpha_u_list = obj[4]
-        alpha_u_len = len(alpha_u_list)
+        #alpha_u_len = len(alpha_u_list)
         alpha_u_min = min(alpha_u_list)
         
         n_small = False;
         
         if alpha != None:
             if alpha_u_min > alpha + 1e-10:
-                cutoff = inf
+                cutoff = math.inf
                 loc = len(indices0)
                 n_small = True
                 print ('Sample size is too small for the given alpha. Try a larger alpha.')
@@ -404,20 +418,15 @@ class npc:
     # pred.npc.core    
     def pred_npc_core(self, fit, newx):
         
-        method = fit[5]
+        #method = fit[5]
         fit_model = fit[0]
         cutoff = fit[3]
         label = []
-        score = []
+        #score = []
 
-        if method == 'svm':
-            decision_values = fit_model.decision_function(newx)
-            score = decision_values
-        elif method == 'logistic':
-            score = fit_model.predict_proba(newx)[:,1]
-        elif method == 'nb':
-            score = fit_model.predict_proba(newx)[:,1]
-        
+        score = fit_model.predict_proba(newx)[:,1]
+
+
         for i in range(len(score)):
             if score[i] > cutoff:
                 label.append(1)
