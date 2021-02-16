@@ -14,9 +14,9 @@ Arguments
 
 	x   		n * p observation matrix. n observations, p covariates.
 	y   		n 0/1 observatons.
-	method		logistic: Logistic Regression.
-            	svm: Support Vector Machine.
-            	nb: Gaussian Naive Bayes.
+	method  	logistic: Logistic Regression.
+				svm: Support Vector Machine.
+				nb: Gaussian Naive Bayes.
 				rf: Random Forest.
 	alpha		the desirable upper bound on type I error. Default = 0.05.
 	delta		the violation rate of the type I error. Default = 0.05.
