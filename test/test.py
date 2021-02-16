@@ -35,7 +35,7 @@ y_test = np.random.binomial(1, 1/(1+np.exp(-c_test)), n)
 # type I error rate on test data.
 # Strictly speaking, to demonstrate the effectiveness of the fit classifier 
 # under the NP paradigm, we should repeat this experiment many times, and 
-# show that in 1−Delta of these repetitions, type I error rate is smaller than alpha.
+# show that in 1 - delta of these repetitions, type I error rate is smaller than alpha.
 
 fitted_score = test.predict(fit,x)
 print("Accuracy on training set:", accuracy_score(fitted_score[0], y))
