@@ -39,26 +39,26 @@ Example
     
     np.random.seed()
     
-    #Create a dataset (x,y) with 2 features, binary label and sample size 10000.
+    # Create a dataset (x,y) with 2 features, binary label and sample size 10000.
     n = 10000
     x = np.random.normal(0, 1, (n,2))
     c = 1+3*x[:,0]
     y = np.random.binomial(1, 1/(1+np.exp(-c)), n)
     
-    #Call the npc function to construct Neyman-Pearson classifiers.
+    # Call the npc function to construct Neyman-Pearson classifiers.
     #The default type I error rate upper bound is alpha=0.05.
     fit = test.npc(x, y, 'logistic', n_cores=os.cpu_count())
     
-    #Evaluate the prediction of the NP classifier fit on a test set (xtest, ytest).
+    # Evaluate the prediction of the NP classifier fit on a test set (xtest, ytest).
     x_test = np.random.normal(0, 1, (n,2))
     c_test = 1+3*x_test[:,0]
     y_test = np.random.binomial(1, 1/(1+np.exp(-c_test)), n)
     
-    #calculate the overall accuracy of the classifier as well as the realized 
-    #type I error rate on test data.
-    #Strictly speaking, to demonstrate the effectiveness of the fit classifier 
-    #under the NP paradigm, we should repeat this experiment many times, and 
-    #show that in 1−Delta of these repetitions, type I error rate is smaller than alpha.
+    # Calculate the overall accuracy of the classifier as well as the realized 
+    # type I error rate on test data.
+    # Strictly speaking, to demonstrate the effectiveness of the fit classifier 
+    # under the NP paradigm, we should repeat this experiment many times, and 
+    # show that in 1−Delta of these repetitions, type I error rate is smaller than alpha.
     
     fitted_score = test.predict(fit,x)
     print("Accuracy on training set:", accuracy_score(fitted_score[0], y))
