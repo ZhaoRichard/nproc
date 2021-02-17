@@ -23,7 +23,7 @@ class npc:
     # npc calculates the Neyman-Pearson Classifier which controls the type I error 
     # under alpha with probability at least 1-delta.
     # returns a result containing the fits with extra information
-    def npc(self, x, y, method, alpha = None, delta = None, split = None, split_ratio = None, n_cores = None, band = None, rand_seed = None):
+    def npc(self, x, y, method, model = None, alpha = None, delta = None, split = None, split_ratio = None, n_cores = None, band = None, rand_seed = None):
         
         if alpha is None:
             alpha = 0.05
@@ -40,6 +40,9 @@ class npc:
         if rand_seed is None:
             rand_seed = 0
 
+        if method == "" and model == None:
+            print ("Method or model must be provided.")
+            return 
         if split_ratio == 'adaptive':
             ret = self.find_optim_split(x, y, method, alpha, delta, split, 10, band, rand_seed)
             split_ratio = ret[0]
@@ -65,7 +68,7 @@ class npc:
         
         if split == 0:
             # no split, use all class 0 obs for training and for calculating the cutoff
-            fits = self.npc_split(x, y, p, alpha, delta, indices0, indices0, indices1, indices1, method, n_cores)
+            fits = self.npc_split(method, model, x, y, p, alpha, delta, indices0, indices0, indices1, indices1, n_cores)
         else:
             # with split
             num0 = round(len0 * split_ratio)  #default size for calculating the classifier
@@ -90,12 +93,12 @@ class npc:
                 if (band == True):
                     
                     fits.append(
-                            self.npc_split(x, y, p, alpha, delta, indices0train, indices0test,
-                              indices1train, indices1test, method, n_cores))
+                            self.npc_split(method, model, x, y, p, alpha, delta, indices0train, indices0test,
+                              indices1train, indices1test, n_cores))
                 else:
                     fits.append(
-                            self.npc_split(x, y, p, alpha, delta, indices0train, indices0test,
-                              indices1, indices1, method, n_cores))
+                            self.npc_split(method, model, x, y, p, alpha, delta, indices0train, indices0test,
+                              indices1, indices1, n_cores))
 
     
         res = [fits, method, split, split_ratio, errors]
@@ -117,7 +120,7 @@ class npc:
     
     # NPC split
     # returns a fit
-    def npc_split(self, x, y, p, alpha, delta, indices0train, indices0test, indices1train, indices1test, method, n_cores):
+    def npc_split(self, method, model, x, y, p, alpha, delta, indices0train, indices0test, indices1train, indices1test, n_cores):
         
         indices_train = indices0train + indices1train
         indices_test = indices0test + indices1test
@@ -128,7 +131,7 @@ class npc:
         x_test = [x[index] for index in indices_test]
         y_test = [y[index] for index in indices_test]
         
-        class_data = self.classification(method, x_train, y_train, x_test)           
+        class_data = self.classification(method, model, x_train, y_train, x_test)           
         if class_data == []:
             return []
         
@@ -147,47 +150,33 @@ class npc:
         return [fit_model, y_test, y_decision_values, cutoff, sign, method, beta_l_list, beta_u_list, alpha_l_list, alpha_u_list, n_small]
  
     
-    def classification(self, method, x_train, y_train, x_test):
+    def classification(self, method, model, x_train, y_train, x_test):
         
         #print (x_train)
         #print (y_train)
         #print (x_test)
 
-        if method == 'logistic':
-            clf_logistic = LogisticRegression()
-            clf_logistic.fit(x_train, y_train)
-            fit_model = clf_logistic
-            test_score = clf_logistic.predict_proba(x_test)[:,1]
+        if method == "" and model != None:
+            fit_model = model
+        elif method == 'logistic':
+            fit_model = LogisticRegression()
         elif method == 'svm':
-            clf_SVM = SVC(probability=True)
-            clf_SVM.fit(x_train, y_train)
-            fit_model = clf_SVM
-            test_score = clf_SVM.predict_proba(x_test)[:,1]
+            fit_model = SVC(probability=True)
         elif method == 'nb':
-            clf_nb = GaussianNB()
-            clf_nb.fit(x_train, y_train)
-            fit_model = clf_nb
-            test_score = clf_nb.predict_proba(x_test)[:,1]
+            fit_model = GaussianNB()
         elif method == 'nb_m':
-            clf_nb = MultinomialNB()
-            clf_nb.fit(x_train, y_train)
-            fit_model = clf_nb
-            test_score = clf_nb.predict_proba(x_test)[:,1]
+            fit_model = MultinomialNB()
         elif method == 'rf':
-            clf_rf = RandomForestClassifier()
-            clf_rf.fit(x_train, y_train)
-            fit_model = clf_rf
-            test_score = clf_rf.predict_proba(x_test)[:,1]
+            fit_model = RandomForestClassifier()
         elif method == 'dt':
-            clf_dt = DecisionTreeClassifier()
-            clf_dt.fit(x_train, y_train)
-            fit_model = clf_dt
-            test_score = clf_dt.predict_proba(x_test)[:,1]
+            fit_model = DecisionTreeClassifier()
         #TODO: more methods
         else:
             print("Method not supported.")
             return []
         
+        fit_model.fit(x_train, y_train)
+        test_score = fit_model.predict_proba(x_test)[:,1]
         
         return [fit_model, test_score]
 
