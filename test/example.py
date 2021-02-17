@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Example of Neyman-Pearson (NP) Classification Algorithms
+# Richard Zhao, Yang Feng, Jingyi Jessica Li and Xin Tong
 
 import numpy as np
 import os
