@@ -4,7 +4,6 @@ __author__ = "Richard Zhao, Yang Feng, Jingyi Jessica Li and Xin Tong"
 __license__ = "GPL"
 __version__ = "3.0"
 __maintainer__ = "Richard Zhao"
-__email__ = "zhao.rich@gmail.com"
 __status__ = "Production"
 
 import scipy.stats as ss
