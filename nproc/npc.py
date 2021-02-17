@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
 __author__ = "Richard Zhao, Yang Feng, Jingyi Jessica Li and Xin Tong"
+__license__ = "GPL"
+__version__ = "3.0"
+__maintainer__ = "Richard Zhao"
+__email__ = "zhao.rich@gmail.com"
+__status__ = "Production"
 
 import scipy.stats as ss
 import numpy as np
@@ -43,12 +48,8 @@ class npc:
         if method == "" and model == None:
             print ("Method or model must be provided.")
             return 
-        if split_ratio == 'adaptive':
-            ret = self.find_optim_split(x, y, method, alpha, delta, split, 10, band, rand_seed)
-            split_ratio = ret[0]
-            errors = ret[2]
-        else:
-            errors = 0
+
+        errors = 0
         
         np.random.seed(rand_seed)
         
@@ -58,9 +59,9 @@ class npc:
             return 
         
         
-        #ind0 = which(y == 0)  ##indices for class 0
+        #indices for class 0
         indices0 =  [index for index, item in enumerate(y) if item == 0]
-        #ind1 = which(y == 1)  ##indices for class 1
+        #indices for class 1
         indices1 =  [index for index, item in enumerate(y) if item == 1]
         
         len0 = len(indices0)
@@ -104,20 +105,7 @@ class npc:
         res = [fits, method, split, split_ratio, errors]
         return res
         
-    
-    
-    # Find the optimal split
-    def find_optim_split(self, x, y, method, alpha, delta, split, n_folds, band, rand_seed):
-        # TODO
-        split_ratio_min = 0
-        split_ratio_1se = 0
-        error_m = 0
-        error_se = 0
-        return [split_ratio_min, split_ratio_1se, error_m, error_se]
-    
-    
-
-    
+        
     # NPC split
     # returns a fit
     def npc_split(self, method, model, x, y, p, alpha, delta, indices0train, indices0test, indices1train, indices1test, n_cores):
@@ -127,9 +115,13 @@ class npc:
                 
         x_train = [x[index] for index in indices_train]
         y_train = [y[index] for index in indices_train]
-        
+        x_train = np.array(x_train)
+        y_train = np.array(y_train)
+
         x_test = [x[index] for index in indices_test]
         y_test = [y[index] for index in indices_test]
+        x_test = np.array(x_test)
+        y_test = np.array(y_test)
         
         class_data = self.classification(method, model, x_train, y_train, x_test)           
         if class_data == []:
@@ -152,10 +144,6 @@ class npc:
     
     def classification(self, method, model, x_train, y_train, x_test):
         
-        #print (x_train)
-        #print (y_train)
-        #print (x_test)
-
         if method == "" and model != None:
             fit_model = model
         elif method == 'logistic':
@@ -170,22 +158,21 @@ class npc:
             fit_model = RandomForestClassifier()
         elif method == 'dt':
             fit_model = DecisionTreeClassifier()
-        #TODO: more methods
         else:
             print("Method not supported.")
             return []
         
         fit_model.fit(x_train, y_train)
-        test_score = fit_model.predict_proba(x_test)[:,1]
+        test_score = fit_model.predict_proba(x_test)[:,-1]
         
         return [fit_model, test_score]
 
         
     def npc_core(self, y_test, y_decision_values, alpha, delta, n_cores):
         
-        #ind0 = which(y == 0)  ##indices for class 0
+        #indices for class 0
         indices0 =  [index for index, item in enumerate(y_test) if item == 0]
-        #ind1 = which(y == 1)  ##indices for class 1
+        #indices for class 1
         indices1 =  [index for index, item in enumerate(y_test) if item == 1]
         
         if len(indices0) == 0 or len(indices1) == 0:
@@ -225,7 +212,6 @@ class npc:
                 print ('Sample size is too small for the given alpha. Try a larger alpha.')
                 
             else:
-                #loc = min(which(obj$alpha.u <= alpha + 1e-10))
                 temp_list = [index for index, item in enumerate(alpha_u_list) if item <= alpha + 1e-10]
                 loc = min(temp_list)
                 cutoff = cutoff_list[loc]
@@ -367,7 +353,6 @@ class npc:
                         beta_u = v_list[index]
                         break     
             
-            #print ( [alpha_l, alpha_u, beta_l, beta_u])
             return [alpha_l, alpha_u, beta_l, beta_u]
         
         
@@ -423,9 +408,8 @@ class npc:
         fit_model = fit[0]
         cutoff = fit[3]
         label = []
-        #score = []
 
-        score = fit_model.predict_proba(newx)[:,1]
+        score = fit_model.predict_proba(newx)[:,-1]
 
 
         for i in range(len(score)):
