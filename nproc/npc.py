@@ -146,6 +146,8 @@ class npc:
         
         if method == "" and model != None:
             fit_model = model
+        elif method == "keras" and model != None:
+            fit_model = model
         elif method == 'logistic':
             fit_model = LogisticRegression()
         elif method == 'svm':
@@ -163,7 +165,11 @@ class npc:
             return []
         
         fit_model.fit(x_train, y_train)
-        test_score = fit_model.predict_proba(x_test)[:,-1]
+        
+        if method == "keras":
+            test_score = fit_model.predict(x_test)[:,-1]
+        else:
+            test_score = fit_model.predict_proba(x_test)[:,-1]
         
         return [fit_model, test_score]
 
@@ -404,12 +410,15 @@ class npc:
     # pred.npc.core    
     def pred_npc_core(self, fit, newx):
         
-        #method = fit[5]
+        method = fit[5]
         fit_model = fit[0]
         cutoff = fit[3]
         label = []
 
-        score = fit_model.predict_proba(newx)[:,-1]
+        if method == "keras":
+            score = fit_model.predict(newx)[:,-1]
+        else:
+            score = fit_model.predict_proba(newx)[:,-1]
 
 
         for i in range(len(score)):

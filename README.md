@@ -24,7 +24,8 @@ Arguments
 	    		nb_m: Multinomial Naive Bayes.
 	    		rf: Random Forest.
 	    		dt: Decision Tree.
-	model		when method = "", model is used. Default is None and model is created from method.
+	    		keras: Keras Deep Learning. Model must be provided.
+	model		when method is "" or keras, model is used. Default is None and model is created from method.
 	alpha		the desirable upper bound on type I error rate. Default = 0.05.
 	delta		the violation rate of the type I error rate. Default = 0.05.
 	split		the number of splits for the class 0 sample. Default = 1. For ensemble version, choose split > 1.
