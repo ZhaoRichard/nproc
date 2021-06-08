@@ -1,6 +1,6 @@
 # nproc: Neyman-Pearson (NP) Classification Algorithms and NP Receiver Operating Characteristic (NP-ROC) Curves
 
-Authors
+Python Implementation Authors
 
 	Richard Zhao, Yang Feng, Jingyi Jessica Li and Xin Tong
 
@@ -8,7 +8,8 @@ In many binary classification applications, such as disease diagnosis and spam d
 
 Details
 
-	See details in: http://advances.sciencemag.org/content/4/2/eaao1659.full
+	See details in: https://doi.org/10.1126/sciadv.aao1659
+	Social media application: https://doi.org/10.1080/01621459.2020.1740711
 
 Usage
 
