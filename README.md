@@ -9,6 +9,7 @@ In many binary classification applications, such as disease diagnosis and spam d
 Details
 
 	See details in: https://doi.org/10.1126/sciadv.aao1659
+	
 	Social media application: https://doi.org/10.1080/01621459.2020.1740711
 
 Usage
@@ -26,7 +27,7 @@ Arguments
 	    		rf: Random Forest.
 	    		dt: Decision Tree.
 	    		keras: Keras Deep Learning. Model must be provided.
-	model		when method is "" or keras, model is used. Default is None and model is created from method.
+	model		use the specified model instead of method. Default is None and model is created from method.
 	alpha		the desirable upper bound on type I error rate. Default = 0.05.
 	delta		the violation rate of the type I error rate. Default = 0.05.
 	split		the number of splits for the class 0 sample. Default = 1. For ensemble version, choose split > 1.

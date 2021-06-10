@@ -143,9 +143,7 @@ class npc:
     
     def classification(self, method, model, x_train, y_train, x_test):
         
-        if method == "" and model != None:
-            fit_model = model
-        elif method == "keras" and model != None:
+        if model != None:
             fit_model = model
         elif method == 'logistic':
             fit_model = LogisticRegression()
