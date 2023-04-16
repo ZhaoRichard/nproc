@@ -397,7 +397,7 @@ class npc:
                 if label[i]/split > 0.5:
                     label[i] = 1
                 else:
-                    label[1] = 0
+                    label[i] = 0
 
             for i in range(len(score)):
                 score[i] = score[i] / split
